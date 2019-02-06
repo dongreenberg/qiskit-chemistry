@@ -17,8 +17,8 @@
 
 from .qiskit_chemistry_error import QiskitChemistryError
 from qiskit.chemistry.drivers import local_drivers, get_driver_class
-from qiskit.aqua import run_algorithm, get_provider_from_backend
-from qiskit.aqua.utils import convert_json_to_dict
+from qiskit.aqua import run_algorithm, get_provider_from_backend, build_algorithm_from_dict
+from qiskit.aqua.utils import convert_json_to_dict, convert_dict_to_json
 from qiskit.chemistry.parser import InputParser
 from qiskit.aqua.parser import JSONSchema
 import json
@@ -65,7 +65,11 @@ class QiskitChemistry(object):
             logger.info('No further process.')
             return {'printable': [driver_return[1]]}
 
-        data = run_algorithm(driver_return[1], driver_return[2], True, backend)
+        self.aqua_algo, self.quantum_instance = build_algorithm_from_dict(driver_return[1],
+                                                                          algo_input=driver_return[2],
+                                                                          backend=backend)
+        data = convert_dict_to_json(self.aqua_algo.run(self.quantum_instance))
+        # data = run_algorithm(driver_return[1], driver_return[2], True, backend)
         if not isinstance(data, dict):
             raise QiskitChemistryError("Algorithm run result should be a dictionary")
 
