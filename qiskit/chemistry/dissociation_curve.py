@@ -57,7 +57,7 @@ import pickle           # to save/checkpoint results
 import os               # to create output directory if necessary
 import copy             # to create copies of aqua dicts
 import numpy as np      # to extrapolate initial parameters
-import pylab #TODO remove dependency
+import pylab #TODO maybe remove dependency?
 
 from .qiskit_chemistry import QiskitChemistry
 
@@ -145,14 +145,11 @@ class DissociationCurve():
         self._force_rerun_pts = [round(point, ndigits=point_sigfigs) for point in force_rerun_pts]
         self._run_classical = compare_to_classical
         self._point_sigfigs = point_sigfigs
+        self._readonly_mode = readonly_mode  # Note, still saves a cache to file right now, so not totally readonly
         self._outdir = output_dir if output_dir is not None else molecule_name + "_output/"
-        if not os.path.exists(self._outdir):
+        if not os.path.exists(self._outdir) and not self._readonly_mode:
             os.makedirs(self._outdir)
         self._try_loading_params = try_loading_params
-        self._readonly_mode = readonly_mode #Note, still saves a cache to file right now, so not totally readonly
-        if not os.path.exists(self._outdir):
-            os.makedirs(self._outdir)
-        # if not self._readonly_mode:
         if vqe_pickle_filename : self._vqe_pickle_filename = vqe_pickle_filename
         else : self._vqe_pickle_filename = "{}_vqe.pickle".format(molecule_name)
         if ee_pickle_filename : self._ee_pickle_filename = ee_pickle_filename
@@ -196,6 +193,7 @@ class DissociationCurve():
                 aqua_dict['problem']['circuit_cache_file'] = cache_file_name
             self._dicts[point] = aqua_dict
 
+    # TODO allow passing QuantumInstance
     def run(self):
         self.run_ee()
         self.run_vqe()

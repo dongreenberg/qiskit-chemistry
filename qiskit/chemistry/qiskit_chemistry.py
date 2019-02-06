@@ -43,6 +43,7 @@ class QiskitChemistry(object):
         self._parser = None
         self._core = None
 
+    # Note: .aqua_algo, .quantum_instance, and .result are overwritten with each run.
     def run(self, input, output=None, backend=None):
         """
         Runs the Aqua Chemistry experiment
@@ -69,7 +70,6 @@ class QiskitChemistry(object):
                                                                           algo_input=driver_return[2],
                                                                           backend=backend)
         data = convert_dict_to_json(self.aqua_algo.run(self.quantum_instance))
-        # data = run_algorithm(driver_return[1], driver_return[2], True, backend)
         if not isinstance(data, dict):
             raise QiskitChemistryError("Algorithm run result should be a dictionary")
 
@@ -77,16 +77,16 @@ class QiskitChemistry(object):
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug('Algorithm returned: {}'.format(pprint.pformat(data, indent=4)))
 
-        lines, result = self._format_result(data)
+        lines, self.result = self._format_result(data)
         logger.info('Processing complete. Final result available')
-        result['printable'] = lines
+        self.result['printable'] = lines
 
         if output is not None:
             with open(output, 'w') as f:
                 for line in lines:
                     print(line, file=f)
 
-        return result
+        return self.result
 
     def save_input(self, input_file):
         """
