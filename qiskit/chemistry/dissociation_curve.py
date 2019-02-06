@@ -195,7 +195,8 @@ class DissociationCurve():
 
     # TODO allow passing QuantumInstance
     def run(self):
-        self.run_ee()
+        if self._run_classical:
+            self.run_ee()
         self.run_vqe()
 
     def run_vqe(self, points=None):
